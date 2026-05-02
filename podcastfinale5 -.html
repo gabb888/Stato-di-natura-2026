@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stato di Natura - Vintage Edition 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,700;1,400&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f4ece1;
+            --card-bg: #e8dfd0;
+            --accent-color: #8b4513; 
+            --accent-gold: #b8860b; 
+            --text-color: #2c241d;
+            --text-dim: #5d4a3a;
+            --border-color: #d2b48c;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'EB Garamond', serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            background-image: url('https://www.transparenttextures.com/patterns/old-map.png');
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url(https://upload.wikimedia.org/wikipedia/commons/7/76/1k_Beige_Dust_Scratch_Texture.jpg);
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #2c241d;
+            padding: 10px 30px;
+            border-bottom: 3px double var(--accent-gold);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 100;
+        }
+
+        .nav-links { display: flex; gap: 10px; }
+
+        nav button {
+            background: transparent;
+            color: var(--bg-color);
+            border: 1px solid var(--accent-gold);
+            padding: 8px 15px;
+            border-radius: 0;
+            cursor: pointer;
+            font-family: 'Playfair Display', serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
+            font-size: 12px;
+        }
+
+        nav button.active {
+            background: var(--accent-gold);
+            color: #2c241d;
+        }
+
+        .master-control-nav {
+            background: var(--accent-gold);
+            color: #2c241d;
+            font-weight: bold;
+            border: 2px solid #2c241d;
+        }
+        .master-control-nav.stop {
+            background: #a52a2a;
+            color: white;
+        }
+
+        .view {
+            display: none;
+            flex-grow: 1;
+            height: calc(100vh - 65px);
+        }
+
+        .view.active { display: flex; }
+
+        .sidebar {
+            width: 260px;
+            background-color: var(--card-bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            border-right: 2px solid var(--border-color);
+            gap: 15px;
+            overflow-y: auto;
+        }
+
+        .philosopher-card {
+            text-align: center;
+            cursor: pointer;
+            transition: 0.4s;
+            opacity: 0.6;
+            filter: sepia(100%);
+            width: 100%;
+            padding: 10px;
+            border: 1px solid transparent;
+        }
+
+        .philosopher-card:hover {
+            border-color: var(--accent-gold);
+            background: rgba(184, 134, 11, 0.1);
+        }
+
+        .philosopher-card img {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--accent-color);
+        }
+
+        .philosopher-card h3 {
+            margin: 5px 0 0;
+            font-size: 14px;
+            font-family: 'Playfair Display', serif;
+            color: var(--accent-color);
+        }
+
+        .philosopher-card.active { opacity: 1; filter: sepia(0%); transform: scale(1.05); }
+
+        #glossary-box {
+            margin-top: 10px;
+            padding: 15px;
+            border: 2px double var(--accent-color);
+            background: #fdfaf5;
+            font-size: 15px;
+            width: 100%;
+            box-shadow: inset 0 0 15px rgba(139, 69, 19, 0.1);
+            min-height: 180px; 
+            max-height: 320px; 
+            overflow-y: auto;  
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        #glossary-box::before {
+            content: "L'interprete dei Termini";
+            display: block;
+            font-family: 'Playfair Display';
+            font-size: 10px;
+            text-transform: uppercase;
+            color: var(--accent-gold);
+            margin-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .content {
+            flex-grow: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .header-controls h1 { 
+            margin: 0;
+            color: var(--accent-color); 
+            font-size: 40px; 
+            font-family: 'Playfair Display', serif;
+            border-bottom: 2px solid var(--accent-gold);
+            display: inline-block;
+        }
+
+        .script-line {
+            margin-bottom: 12px;
+            padding: 15px;
+            background: rgba(255,255,255,0.4);
+            border-left: 4px solid var(--border-color);
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            transition: 0.3s;
+        }
+
+        .script-line.highlight {
+            background: white;
+            border-left-color: var(--accent-gold);
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .play-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 10px;
+        }
+
+        .speaker-name { font-weight: 700; color: var(--accent-color); min-width: 90px; font-family: 'Playfair Display', serif;}
+        .dialogue { line-height: 1.5; font-size: 18px; font-style: italic; }
+
+        #studio-view { background: #1a1510; color: #d2b48c; }
+
+        .studio-band {
+            flex: 1;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            border-right: 1px solid #332a20; transition: 0.6s;
+        }
+
+        .studio-band img {
+            width: 180px;
+            height: 180px; border-radius: 5px;
+            filter: grayscale(1) contrast(1.2); border: 5px solid #332a20; transition: 0.5s;
+        }
+
+        .studio-band h2 { margin-top: 20px; font-family: 'Playfair Display', serif; color: #5d4a3a; text-align: center; }
+        .studio-band.speaking { background: radial-gradient(circle, rgba(184, 134, 11, 0.15) 0%, rgba(0,0,0,0) 80%); }
+        .studio-band.speaking img { filter: sepia(0.5) contrast(1); border-color: var(--accent-gold); box-shadow: 0 0 40px rgba(184, 134, 11, 0.4); transform: translateY(-10px); }
+        .studio-band.speaking h2 { color: var(--accent-gold); }
+
+        #dictionary-view { padding: 40px; flex-direction: column; align-items: center; overflow-y: auto; }
+        .dict-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; width: 100%; max-width: 1000px; margin-top: 30px; }
+        .dict-card { background: #fff9eb; padding: 20px; border: 1px solid var(--border-color); box-shadow: 3px 3px 0px var(--border-color); transition: 0.3s; }
+        .dict-card:hover { transform: translateY(-5px); border-color: var(--accent-gold); }
+        .dict-card h4 { margin: 0 0 10px 0; color: var(--accent-color); font-family: 'Playfair Display'; border-bottom: 1px solid var(--accent-gold); }
+
+        .contract-box { margin-top: 50px; padding: 30px; background: #eee4d5; border: 4px double var(--accent-color); max-width: 600px; text-align: center; }
+        .contract-box select, .contract-box input { padding: 10px; font-family: 'EB Garamond'; border: 1px solid var(--accent-gold); background: white; margin: 10px; }
+        .btn-sign { background: var(--accent-color); color: white; border: none; padding: 10px 20px; cursor: pointer; font-family: 'Playfair Display'; }
+
+        #timeline-view { padding: 40px; overflow-y: auto; flex-direction: column; align-items: center; }
+        .timeline-container { position: relative; max-width: 800px; margin: 0 auto; padding-left: 50px; border-left: 2px solid var(--accent-gold); }
+        .timeline-item { margin-bottom: 30px; position: relative; cursor: pointer; padding: 15px; background: var(--card-bg); border: 1px solid var(--border-color); transition: 0.3s; }
+        .timeline-item:hover { transform: translateX(10px); border-color: var(--accent-gold); }
+        .timeline-item::before { content: ""; position: absolute; left: -57px; top: 20px; width: 12px; height: 12px; background: var(--accent-color); border-radius: 50%; border: 2px solid var(--accent-gold); }
+        .timeline-date { font-family: 'Playfair Display'; font-weight: bold; color: var(--accent-color); margin-bottom: 5px; }
+
+        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--bg-color); padding: 40px; border: 3px double var(--accent-color); z-index: 1000; width: 450px; text-align: center; box-shadow: 0 0 50px rgba(0,0,0,0.5); font-family: 'EB Garamond', serif;}
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 999; }
+
+        #notebook-trigger { position: fixed; bottom: 20px; right: 20px; background: var(--accent-color); color: white; border: none; padding: 15px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1001; }
+        #notebook { position: fixed; bottom: 80px; right: 20px; width: 300px; height: 400px; background: #fff9eb; border: 2px solid var(--accent-gold); display: none; flex-direction: column; padding: 15px; box-shadow: -5px 5px 20px rgba(0,0,0,0.2); z-index: 1001; }
+        #notebook textarea { flex-grow: 1; border: none; background: transparent; font-family: 'EB Garamond', serif; font-size: 16px; resize: none; outline: none; line-height: 24px; background-image: linear-gradient(#d2b48c 1px, transparent 1px); background-size: 100% 24px; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="nav-links">
+            <button id="btn-script" class="active" onclick="switchTab('script')">Manoscritto</button>
+            <button id="btn-studio" onclick="switchTab('studio')">Salotto Live</button>
+            <button id="btn-timeline" onclick="switchTab('timeline')">Confronto Epoche</button>
+            <button id="btn-dictionary" onclick="switchTab('dictionary')">Enciclopedia Politica</button>
+        </div>
+        <button class="master-control-nav" id="master-play" onclick="toggleAutoPlay()">AVVIA PODCAST COMPLETO</button>
+    </nav>
+
+    <button id="notebook-trigger" onclick="toggleNotebook()">✎</button>
+    <div id="notebook">
+        <h4 style="margin: 0 0 10px 0; font-family: 'Playfair Display'; border-bottom: 1px solid var(--accent-gold);">Taccuino di Gabriele</h4>
+        <textarea placeholder="Annota qui le tue riflessioni sul 2026..."></textarea>
+    </div>
+
+    <div class="overlay" id="overlay" onclick="closeModal()"></div>
+    <div class="modal" id="modal">
+        <h2 id="modal-title"></h2>
+        <hr style="border: 0; border-top: 1px solid var(--accent-gold); margin: 20px 0;">
+        <p id="modal-desc"></p>
+        <button onclick="closeModal()" style="margin-top: 20px; background: var(--accent-color); color:white; border:none; padding:10px 25px; cursor:pointer;">CHIUDI</button>
+    </div>
+
+    <div id="script-view" class="view active">
+        <div class="sidebar">
+            <h2 style="font-size: 18px; color: var(--accent-color); font-family: 'Playfair Display', serif;">GLI OSPITI</h2>
+            <div class="philosopher-card" id="card-host" onclick="showInfo('Gabriele Lombardi', 'Studente della classe 4C del Liceo Linguistico I.I.S.S Aldo Moro e regista del podcast.')">
+                <img src="https://img.icons8.com/ios-filled/150/8b4513/microphone.png" alt="Gabriele">
+                <h3>GABRIELE LOMBARDI</h3>
+            </div>
+            <div class="philosopher-card" id="card-grozio" onclick="showInfo('Ugo Grozio', 'Padre del diritto internazionale. Crede che la ragione umana possa dettare leggi universali, valide anche senza Dio.')">
+                <img src="https://i.postimg.cc/pyfpkkkC/Michiel-Jansz-van-Mierevelt-Hugo-Grotius.jpg" alt="Grozio">
+                <h3>GROZIO</h3>
+            </div>
+            <div class="philosopher-card" id="card-hobbes" onclick="showInfo('Thomas Hobbes', 'Autore del Leviatano. Convinto che l\'uomo sia un lupo per l\'altro uomo e che solo un potere assoluto eviti il caos.')">
+                <img src="https://i.postimg.cc/1fM41tkW/Thomas-Hobbes-(portrait).jpg" alt="Hobbes">
+                <h3>HOBBES</h3>
+            </div>
+            <div class="philosopher-card" id="card-locke" onclick="showInfo('John Locke', 'Il filosofo della libertà e della tolleranza. Per lui lo Stato deve solo proteggere Vita, Libertà e Proprietà.')">
+                <img src="https://i.postimg.cc/FYRzrvmt/John-Locke.png" alt="Locke">
+                <h3>LOCKE</h3>
+            </div>
+            <div class="philosopher-card" id="card-rousseau" onclick="showInfo('Jean-Jacques Rousseau', 'Critico della civiltà. Crede che la società ci abbia corrotti e che dovremmo tornare alla Volontà Generale.')">
+                <img src="https://i.postimg.cc/nCTMfzy3/Jean-Jacques-Rousseau-(painted-portrait).jpg" alt="Rousseau">
+                <h3>ROUSSEAU</h3>
+            </div>
+            <div id="glossary-box">
+                <div id="glossary-text"><i>Analisi dei termini dotti in corso...</i></div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="header-controls">
+                <h1>Stato di Natura <span style="font-style: italic; font-weight: 300; font-size: 24px;">Anno 2026</span></h1>
+                <p style="color: var(--text-dim); font-style: italic; margin-top: 10px;">Regia di Gabriele Lombardi - Classe 4C Liceo Aldo Moro</p>
+            </div>
+            <div id="script-container"></div>
+        </div>
+    </div>
+
+    <div id="studio-view" class="view">
+        <div class="studio-band" id="band-host">
+            <img src="https://img.icons8.com/ios-filled/150/8b4513/microphone.png" alt="Gabriele">
+            <h2>GABRIELE LOMBARDI</h2>
+        </div>
+        <div class="studio-band" id="band-grozio"><img src="https://i.postimg.cc/pyfpkkkC/Michiel-Jansz-van-Mierevelt-Hugo-Grotius.jpg"><h2>GROZIO</h2></div>
+        <div class="studio-band" id="band-hobbes"><img src="https://i.postimg.cc/1fM41tkW/Thomas-Hobbes-(portrait).jpg"><h2>HOBBES</h2></div>
+        <div class="studio-band" id="band-locke"><img src="https://i.postimg.cc/FYRzrvmt/John-Locke.png"><h2>LOCKE</h2></div>
+        <div class="studio-band" id="band-rousseau"><img src="https://i.postimg.cc/nCTMfzy3/Jean-Jacques-Rousseau-(painted-portrait).jpg"><h2>ROUSSEAU</h2></div>
+    </div>
+
+    <div id="timeline-view" class="view">
+        <h1 style="font-family: 'Playfair Display'; color: var(--accent-color);">Cronologia del Pensiero Politico</h1>
+        <div class="timeline-container" id="timeline-box"></div>
+    </div>
+
+    <div id="dictionary-view" class="view">
+        <h1 style="font-family: 'Playfair Display'; color: var(--accent-color);">Enciclopedia Politica del Podcast</h1>
+        <div class="dict-grid" id="full-dictionary"></div>
+        <div class="contract-box">
+            <h3 style="font-family: 'Playfair Display'; color: var(--accent-color);">IL CONTRATTUALIZZATORE 2026</h3>
+            <p>Sulla base di quanto ascoltato, con chi vuoi stringere il tuo patto sociale?</p>
+            <input type="text" id="user-name" placeholder="Inserisci il tuo nome...">
+            <select id="philosopher-choice">
+                <option value="hobbes">Sottomissione al Leviatano (Hobbes)</option>
+                <option value="locke">Patto di Tutela Liberale (Locke)</option>
+                <option value="rousseau">Adesione alla Volontà Generale (Rousseau)</option>
+                <option value="grozio">Diritto Razionale Internazionale (Grozio)</option>
+            </select><br>
+            <button class="btn-sign" onclick="signContract()">FIRMA IL CONTRATTO</button>
+            <div id="contract-result" style="margin-top: 20px; font-weight: bold; color: var(--accent-gold);"></div>
+        </div>
+    </div>
+
+    <script>
+        const scriptData = [
+            { s: 'host', t: 'Benvenuti nel salotto di Stato di Natura 2026. Sono Gabriele Lombardi. Signori, siamo nel pieno di un collasso geopolitico globale. Guerre nucleari sfiorate, democrazie scosse da populismi e una tecnologia che ci spia. Chi di voi ha avuto davvero ragione?', a: 'gabriele 1.mp3' },
+            { s: 'hobbes', t: 'È fin troppo ovvio, Gabriele. Guardatevi intorno! Appena il timore di un potere superiore svanisce, i leader tornano a sbranarsi. È la dimostrazione del mio Leviatano: senza un Sovrano comune, siamo ancora nel Bellum omnium contra omnes.', a: 'hobbes 1.mp3' },
+            { s: 'grozio', t: 'Thomas, la tua visione è barbara! Anche nel 2026, la guerra non è un vuoto di diritto. Esiste un Ius Gentium. La ragione umana detterebbe leggi universali etiamsi daremus non esse Deum.', a: 'grozio 1.mp3' },
+            { s: 'locke', t: 'Thomas, la tua ossessione per la stabilità giustifica la tirannia. Nel 2026 lo Stato deve essere un arbitro, non un padrone. Se un governo non protegge la Proprietà e la Libertà, il popolo ha il Diritto di Resistenza.', a: 'locke 1.mp3' },
+            { s: 'rousseau', t: 'Ma sentitelo, il filosofo dell\'egoismo! Locke, tu parli di proprietà, ma è stata proprio la prima recinzione a creare la disuguaglianza. Nel 2026 la vostra democrazia è una finzione: poche persone decidono per la Volontà Generale.', a: 'rousseau 1.mp3' },
+            { s: 'host', t: 'Ora cambiamo argomento. Se oggi i video possono essere falsificati dall\'Intelligenza Artificiale, come facciamo a stipulare un Contratto Sociale basato sulla fiducia?', a: 'gabriele 2.mp3' },
+            { s: 'grozio', t: 'La verità è il fondamento del diritto naturale. Senza una verità oggettiva, nessuna promessa è valida e la società si distruggerebbe come nulla.', a: 'grozio 2.mp3' },
+            { s: 'hobbes', t: 'Appunto! Se la verità diventa soggettiva, deve essere il Sovrano a decidere cosa è vero per il bene dell\'ordine pubblico. Auctoritas, non veritas facit legem.', a: 'hobbes 2.mp3' },
+            { s: 'locke', t: 'Mai! La ragione ci permette di distinguere il vero dal falso. Dobbiamo proteggere il libero flusso delle informazioni, evitando il libero arbitrio del potere.', a: 'locke 2.mp3' },
+            { s: 'rousseau', t: 'La tecnologia è solo un nuovo modo per mentire. L\'uomo naturale non aveva bisogno di algoritmi. Siete prigionieri della vostra stessa civiltà.', a: 'rousseau 2.mp3' },
+            { s: 'host', t: 'Un\'ultima questione cruciale: l\'emergenza climatica. La Terra sta morendo e le nazioni non trovano accordi. Chi deve imporre il sacrificio per salvare la specie?', a: 'gabriele 3.mp3' },
+            { s: 'hobbes', t: 'Nessun accordo volontario funzionerà mai, Gabriele. Serve un Leviatano Globale, un potere sovranazionale coercitivo che punisca chi inquina. Covenants, without the sword, are but words.', a: 'hobbes 3.mp3' },
+            { s: 'grozio', t: 'Non serve la forza bruta, Thomas, ma lo Ius Naturae. La conservazione della specie è un obbligo razionale. Gli states devono sottomettersi a trattati vincolanti per il bene dell\'umanità intera.', a: 'grozio 3.mp3' },
+            { s: 'locke', t: 'Attenzione però: non si può usare l\'ecologia come scusa per calpestare la libertà individuale. Lo Stato deve incentivare il lavoro e l\'innovazione per salvare la proprietà comune, senza diventare un despota.', a: 'locke 3.mp3' },
+            { s: 'rousseau', t: 'Il clima è la vendetta della Natura sulla vostra avidità. Non si salva la Terra con i mercati delle emissioni, ma tornando alla frugalità naturale e abbattendo le recinzioni del profitto.', a: 'rousseau 3.mp3' },
+            { s: 'host', t: 'Signori, parliamo di qualcosa che tutti abbiamo in tasca: lo smartphone. Nel 2026, gli algoritmi decidono quali video dobbiamo guardare e come dobbiamo pensare. Siamo ancora liberi in questa giungla digitale?', a: 'gabriele 4.mp3' },
+            { s: 'hobbes', t: 'Ma questo è ordine perfetto, Gabriele! Se il popolo passa il tempo a guardare video divertenti invece di ribellarsi, il Sovrano ha vinto. Il vero Leviatano oggi è un algoritmo che tiene tutti calmi e distratti. Niente caos, solo intrattenimento!', a: 'hobbes 4.mp3' },
+            { s: 'locke', t: 'Assolutamente no, Thomas! Se un sistema decide cosa devo desiderare, io non sono più proprietario dei miei pensieri. La mia attenzione è la mia proprietà più preziosa. Questo controllo invisibile è una violazione del patto di libertà!', a: 'locke 4.mp3' },
+            { s: 'rousseau', t: 'Guardatevi: schiavi di uno schermo di vetro. Avete scambiato la libertà reale con dei "like" virtuali. L\'uomo è nato libero, ma oggi è ovunque incatenato a una futile tecnologia in cerca di approvazione sociale!', a: 'rousseau 4.mp3' },
+            { s: 'grozio', t: 'Serve equilibrio. La ragione ci dice che i dati personali devono essere protetti da leggi universali. Anche nel mondo digitale, deve valere il rispetto per la dignità dell\'individuo. Il codice non può sostituire la morale.', a: 'grozio 4.mp3' },
+            { s: 'host', t: 'Signori, il tempo stringe. Un ultimo consiglio ai giovani del 2026.', a: 'gabriele 5.mp3' },
+            { s: 'hobbes', t: 'Scegliete l\'ordine. Meglio un governo imperfetto che il caos della giungla.', a: 'hobbes 5.mp3' },
+            { s: 'locke', t: 'Scegliete la libertà. Non lasciate che nessuno vi convinca che la vostra vita appartiene a qualcun altro.', a: 'locke 5.mp3' },
+            { s: 'grozio', t: 'Scegliete la ragione. È l\'unico ponte per non cadere nell\'abisso della violenza.', a: 'grozio 5.mp3' },
+            { s: 'rousseau', t: 'Scegliete l\'umanità. Guardatevi negli occhi invece che negli schermi.', a: 'rousseau 5.mp3' },
+            { s: 'host', t: 'Grazie a tutti per la partecipazione. Ci rivedremo nel prossimo podcast. Alla prossima!', a: 'gabriele 6.mp3' }
+        ];
+
+        const glossary = {
+            "Leviatano": "Simbolo dello Stato assoluto che garantisce la pace tramite il potere totale.",
+            "Ius Gentium": "Diritto delle genti; l'insieme di norme comuni a tutti i popoli.",
+            "Bellum omnium contra omnes": "Guerra di tutti contro tutti; la condizione naturale di caos.",
+            "Etiamsi daremus": "Idea di Grozio: il diritto naturale varrebbe anche se Dio non esistesse.",
+            "Diritto di Resistenza": "Il diritto del popolo di ribellarsi contro un potere ingiusto (Locke).",
+            "Volontà Generale": "L'interesse collettivo che mira al bene comune (Rousseau).",
+            "Auctoritas, non veritas": "L'autorità del sovrano, non la verità, crea la legge per Hobbes.",
+            "Ius Naturae": "Leggi morali dettate dalla pura ragione umana.",
+            "Coercitivo": "Un potere che può obbligare al rispetto delle regole con la forza.",
+            "Algoritmo": "In questo contesto, il sistema digitale che influenza le nostre scelte e pensieri online.",
+            "Covenants": "Patti o contratti sociali tra gli uomini.",
+            "Proprietà": "Concetto di Locke: ognuno è padrone del proprio corpo, tempo e lavoro."
+        };
+
+        const timelineData = [
+            { d: "1625", t: "Ugo Grozio", desc: "De jure belli ac pacis. Nasce il diritto internazionale razionale." },
+            { d: "1651", t: "Thomas Hobbes", desc: "Pubblicazione del Leviatano durante la guerra civile inglese." },
+            { d: "1689", t: "John Locke", desc: "Due trattati sul governo: nasce il liberalismo moderno e la divisione dei poteri." },
+            { d: "1762", t: "Jean-Jacques Rousseau", desc: "Il Contratto Sociale e l'ideale della sovranità popolare e democratica." },
+            { d: "2026", t: "Oggi", desc: "Crisi digitale, climatica e geopolitica: serve urgentemente un nuovo patto sociale globale." }
+        ];
+
+        const container = document.getElementById('script-container');
+        scriptData.forEach((line, index) => {
+            const div = document.createElement('div');
+            div.className = 'script-line';
+            div.id = 'line-' + index;
+            div.innerHTML = `
+                <button class="play-btn" onclick="playSingle(${index})">ASCOLTA</button>
+                <div class="speaker-name">${line.s === 'host' ? 'GABRIELE L.' : line.s.toUpperCase()}</div>
+                <div class="dialogue">"${line.t}"</div>
+            `;
+            container.appendChild(div);
+        });
+
+        const tBox = document.getElementById('timeline-box');
+        timelineData.forEach(item => {
+            tBox.innerHTML += `
+                <div class="timeline-item" onclick="showInfo('${item.d}: ${item.t}', '${item.desc}')">
+                    <div class="timeline-date">${item.d}</div>
+                    <strong>${item.t}</strong> - ${item.desc.substring(0, 60)}...
+                </div>`;
+        });
+
+        const dictBox = document.getElementById('full-dictionary');
+        for (let term in glossary) {
+            dictBox.innerHTML += `
+                <div class="dict-card">
+                    <h4>${term}</h4>
+                    <p>${glossary[term]}</p>
+                </div>`;
+        }
+
+        let isAutoPlaying = false;
+        let currentIndex = 0;
+        const audioPlayer = new Audio();
+
+        function switchTab(tab) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+            document.getElementById(tab + '-view').classList.add('active');
+            document.getElementById('btn-' + tab).classList.add('active');
+        }
+
+        function toggleAutoPlay() {
+            const btn = document.getElementById('master-play');
+            if (isAutoPlaying) {
+                isAutoPlaying = false;
+                audioPlayer.pause();
+                btn.innerHTML = "AVVIA PODCAST COMPLETO";
+                btn.classList.remove('stop');
+                resetGraphics();
+            } else {
+                isAutoPlaying = true;
+                currentIndex = 0;
+                btn.innerHTML = "INTERROMPI PODCAST";
+                btn.classList.add('stop');
+                playNext();
+            }
+        }
+
+        function playSingle(index) { 
+            isAutoPlaying = false; 
+            document.getElementById('master-play').innerHTML = "AVVIA PODCAST COMPLETO";
+            document.getElementById('master-play').classList.remove('stop');
+            speakLine(index); 
+        }
+
+        function playNext() {
+            if (!isAutoPlaying || currentIndex >= scriptData.length) {
+                if(isAutoPlaying) toggleAutoPlay();
+                return;
+            }
+            speakLine(currentIndex, () => {
+                currentIndex++;
+                setTimeout(() => { if(isAutoPlaying) playNext(); }, 800);
+            });
+        }
+
+        function speakLine(index, callback) {
+            const line = scriptData[index];
+            highlightSpeaker(line.s, index);
+            
+            // LA MAGIA È QUI: Calcola il tempo necessario per leggere la frase se l'audio fallisce
+            // (circa 60 millisecondi per lettera + 2 secondi di pausa iniziale)
+            const fallbackDuration = Math.max(3000, line.t.length * 60);
+
+            if (!line.a) { 
+                if(callback) setTimeout(callback, fallbackDuration); 
+                return; 
+            }
+
+            audioPlayer.src = line.a;
+            audioPlayer.load();
+            
+            audioPlayer.oncanplaythrough = () => {
+                // Prova a riprodurre. Se il browser blocca (Autoplay Policy) o Drive blocca, cattura l'errore.
+                audioPlayer.play().catch(e => {
+                    console.warn("Audio bloccato alla riga " + index + ", uso timer lettura.");
+                    if(callback) setTimeout(callback, fallbackDuration);
+                });
+            };
+
+            // Se l'audio finisce regolarmente, passa oltre
+            audioPlayer.onended = () => { if(callback) callback(); };
+            
+            // Se c'è un errore brutale di Google Drive (es. 403 Forbidden o Error 404), attiva il timer
+            audioPlayer.onerror = () => {
+                console.warn("Google Drive impedisce il caricamento. Uso il timer di lettura.");
+                if(callback) setTimeout(callback, fallbackDuration);
+            };
+        }
+
+        function highlightSpeaker(speakerId, index) {
+            resetGraphics();
+            const cardId = speakerId === 'host' ? 'card-host' : 'card-' + speakerId;
+            const bandId = speakerId === 'host' ? 'band-host' : 'band-' + speakerId;
+            
+            if(document.getElementById(cardId)) document.getElementById(cardId).classList.add('active');
+            if(document.getElementById('line-' + index)) {
+                document.getElementById('line-' + index).classList.add('highlight');
+                document.getElementById('line-' + index).scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            if(document.getElementById(bandId)) document.getElementById(bandId).classList.add('speaking');
+            updateGlossary(scriptData[index].t);
+        }
+
+        function updateGlossary(text) {
+            const box = document.getElementById('glossary-text');
+            let foundTerms = [];
+            for (let term in glossary) {
+                if (text.toLowerCase().includes(term.toLowerCase())) {
+                    foundTerms.push(`<strong style="color:var(--accent-gold); display:block; margin-bottom:5px;">${term}:</strong> ${glossary[term]}`);
+                }
+            }
+            box.innerHTML = foundTerms.length > 0 ? foundTerms.join("<hr style='border:0; border-top:1px solid #eee; margin:10px 0;'>") : "<i>Nessun termine rilevato.</i>";
+        }
+
+        function resetGraphics() {
+            document.querySelectorAll('.philosopher-card, .script-line, .studio-band').forEach(el => el.classList.remove('active', 'highlight', 'speaking'));
+        }
+
+        function showInfo(title, desc) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-desc').innerText = desc;
+            document.getElementById('modal').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
+        }
+
+        function closeModal() { 
+            document.getElementById('modal').style.display = 'none'; 
+            document.getElementById('overlay').style.display = 'none'; 
+        }
+
+        function toggleNotebook() { 
+            const n = document.getElementById('notebook'); 
+            n.style.display = (n.style.display === 'flex') ? 'none' : 'flex'; 
+        }
+
+        function signContract() {
+            const name = document.getElementById('user-name').value;
+            const choice = document.getElementById('philosopher-choice').value;
+            if(!name) { alert("Inserisci un nome prima di firmare il contratto!"); return; }
+            const titles = { 
+                hobbes: "Suddito del Leviatano", 
+                locke: "Cittadino Libero", 
+                rousseau: "Membro della Volontà Generale", 
+                grozio: "Ambasciatore della Ragione" 
+            };
+            document.getElementById('contract-result').innerHTML = `📜 FIRMATO: ${name.toUpperCase()}, ora sei ufficialmente un ${titles[choice]}!`;
+        }
+    </script>
+</body>
+</html>
